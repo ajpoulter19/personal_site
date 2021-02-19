@@ -1,0 +1,390 @@
+---
+title: "<img src=\"IUsnip.png\" style=\"float: top;\"/> V609: Assignment 1"
+author: |
+  | Andrew J. Poulter
+  | MPA Student
+  | Paul H. O'Neill School of Public & Environmental Affairs
+  | andpoult@iu.edu
+date: '`r format(Sys.time(), "%B %d, %Y")`'
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(forecast)
+library(readxl)
+library(writexl)
+library(ggplot2)
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(reshape)
+library(reshape2)
+library(knitr)
+library(kableExtra)
+library(dynlm)
+library(texreg)
+library(scales)
+
+
+##import data##
+PIT_RST_Data_cleaned_without_predicted_IVs <- read_excel("C:/Users/Andrew/OneDrive/Spring 2021/Revenue Theory/HW 1/PIT_RST_Data_cleaned_without_predicted_IVs.xlsx")
+View(PIT_RST_Data_cleaned_without_predicted_IVs)
+
+# Plot Total Sales Tax Revenue/Qtr 
+fig1<-PIT_RST_Data_cleaned_without_predicted_IVs %>%
+  ggplot( aes(x=`Year.Qtr`, y=`Sales Tax Revenue (millions)`)) +
+  geom_line( color="grey") +
+  geom_point(shape=21, color="black", fill="#69b3a2", size=2) +
+  theme(axis.text.x = element_text(size=2.5,angle=90)) + 
+  labs(x="Calendar Year",y="Millions, $")+
+  ggtitle("1974-2017")
+print(fig1)
+
+##Forecasting the independent variables
+##1990-2020##
+data.train<-PIT_RST_Data_cleaned_without_predicted_IVs[which(PIT_RST_Data_cleaned_without_predicted_IVs$`Calendar Year`<=2020),]
+data.test<-PIT_RST_Data_cleaned_without_predicted_IVs[which(PIT_RST_Data_cleaned_without_predicted_IVs$`Calendar Year`>=2021),]
+Year<-PIT_RST_Data_cleaned_without_predicted_IVs$`Calendar Year`
+Qtr<-PIT_RST_Data_cleaned_without_predicted_IVs$`Calendar Qtr`
+##Forecasting Independent Variables
+                  ##personal disposable income: pdi
+##fit
+fit.pdi<- lm(`IN Personal Disposable Income as Percentage of US (millions)` ~ Year.Qtr.rep, data=data.train)
+summary(fit.pdi)
+##predict
+out.pdi.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.pdi,data.train)))
+out.pdi.test<-as.data.frame(cbind(Year[127:132],Qtr[127:132],predict(fit.pdi,data.test)))
+names(out.pdi.train)<-c("Year","Qtr","PDI.InSampleForecast")
+names(out.pdi.test)<-c("Year","Qtr","PDI.TestDataForecast")
+##predict vs. actuals
+fig.pdi<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_without_predicted_IVs, aes(x = Year,y=`IN Personal Disposable Income as Percentage of US (millions)`), color="black") +
+  geom_line(data=out.pdi.train, aes(x = Year,y=PDI.InSampleForecast), color="red") +
+  geom_line(data=out.pdi.test, aes(x = Year,y=PDI.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Millions, $")+
+  ggtitle("IN Personal Disposable Income 1989-2020")
+print(fig.pdi)
+##put data into total data-couldn't figure out how to do this so I manually put values into excel
+
+                          ##personal income: pi
+##fit
+fit.pi<- lm(`Personal Income (millions)` ~ Year.Qtr.rep, data=data.train)
+summary(fit.pi)
+##predict
+out.pi.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.pi,data.train)))
+out.pi.test<-as.data.frame(cbind(Year[127:132],Qtr[127:132],predict(fit.pi,data.test)))
+names(out.pi.train)<-c("Year","Qtr","PI.InSampleForecast")
+names(out.pi.test)<-c("Year","Qtr","PI.TestDataForecast")
+##predict vs. actuals
+fig.pi<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_without_predicted_IVs, aes(x = Year,y=`Personal Income (millions)`), color="black") +
+  geom_line(data=out.pi.train, aes(x = Year,y=PI.InSampleForecast), color="red") +
+  geom_line(data=out.pi.test, aes(x = Year,y=PI.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Millions, $")+
+  ggtitle("IN Personal Income 1989-2020")
+print(fig.pi)
+##enter predictions for PI into excel sheet
+
+                      ##unemployment rate
+##fit
+fit.ur<- lm(`Unemployment Rate` ~ Year.Qtr.rep+lag(`Unemployment Rate`,1), data=data.train)
+summary(fit.ur)
+##I thought about using dummy variables for cycles in the UR, but it didn't make a large difference so I kept it simple with just a lag
+data.ar.test<-PIT_RST_Data_cleaned_without_predicted_IVs[which(PIT_RST_Data_cleaned_without_predicted_IVs$`Fiscal Year`>=2021),]
+
+##predict
+out.ur.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.ur,data.train)))
+out.ur.test<-as.data.frame(cbind(Year[125:132],Qtr[125:132],predict(fit.ur,data.ar.test)))
+names(out.ur.train)<-c("Year","Qtr","UR.InSampleForecast")
+names(out.ur.test)<-c("Year","Qtr","UR.TestDataForecast")
+##predict vs. actuals
+fig.ur<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_without_predicted_IVs, aes(x = Year,y=`Unemployment Rate`), color="black") +
+  geom_line(data=out.ur.train, aes(x = Year,y=UR.InSampleForecast), color="red") +
+  geom_line(data=out.ur.test, aes(x = Year,y=UR.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Unemployment Rate")+
+  ggtitle("IN Unemployment Rate 1989-2020")
+print(fig.ur)
+      ##for some reason out.ur.test wouldn't predict beyond 1 quarter.
+      ##I manually calculated the other predictions and put them in an excel sheet.
+
+                ##load excel sheet with predicted independent variables##
+PIT_RST_Data_cleaned_with_predicted_IVs <- read_excel("C:/Users/Andrew/OneDrive/Spring 2021/Revenue Theory/HW 1/PIT_RST_Data_cleaned_with_predicted_IVs.xlsx")
+View(PIT_RST_Data_cleaned_with_predicted_IVs)
+data.final.train<-PIT_RST_Data_cleaned_with_predicted_IVs[which(PIT_RST_Data_cleaned_with_predicted_IVs$`Calendar Year`<=2020),]
+data.final.test<-PIT_RST_Data_cleaned_with_predicted_IVs[which(PIT_RST_Data_cleaned_with_predicted_IVs$`Calendar Year`>=2021),]
+
+                    ###Preliminary Final Model Forecasts###
+                      ###Sales Tax Revenue Forecasts###
+
+##1. SIMPLE TIME TREND MODEL
+#Fit Time Trend Model on Training data
+fit.TT<- lm(`Sales Tax Revenue (millions)` ~ `Year.Qtr.rep`, data=data.final.train)
+summary(fit.TT)
+#Predict on Test Data and Train Data
+out.TT.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.TT,data.final.train)))
+out.TT.test<-as.data.frame(cbind(Year[127:132],Qtr[127:132],predict(fit.TT,data.final.test)))
+names(out.TT.train)<-c("Year","Qtr","TT.InSampleForecast")
+names(out.TT.test)<-c("Year","Qtr","TT.TestDataForecast")
+##predict vs. actuals
+fig.TT<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = Year,y=`Sales Tax Revenue (millions)`), color="black") +
+  geom_line(data=out.TT.train, aes(x = Year,y=TT.InSampleForecast), color="red") +
+  geom_line(data=out.TT.test, aes(x = Year,y=TT.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Millions, $")+
+  ggtitle("Sales Tax Revenue")
+print(fig.TT)
+
+##2. Multivariate Model
+#Fit MV Model on Training data w/PDI
+fit.MV<- lm(`Sales Tax Revenue (millions)` ~ `Year.Qtr.rep`+`Sales Tax Rate`+`Q2 Dummy`+`Q3 Dummy`+`Q4 Dummy`+`IN Personal Disposable Income as Percentage of US (millions)`, data=data.final.train)
+summary(fit.MV)
+#Predict on Test Data and Train Data
+out.MVsales.pdi.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.MV,data.final.train)))
+out.MVsales.pdi.test<-as.data.frame(cbind(Year[127:132],Qtr[127:132],predict(fit.MV,data.final.test)))
+names(out.MVsales.pdi.train)<-c("Year","Qtr","MVsales.pdi.InSampleForecast")
+names(out.MVsales.pdi.test)<-c("Year","Qtr","MVsales.pdi.TestDataForecast")
+##predict vs. actuals
+fig.MVsales.PDI<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = Year,y=`Sales Tax Revenue (millions)`), color="black") +
+  geom_line(data=out.MVsales.pdi.train, aes(x = Year,y=MVsales.pdi.InSampleForecast), color="red") +
+  geom_line(data=out.MVsales.pdi.test, aes(x = Year,y=MVsales.pdi.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Millions, $")+
+  ggtitle("Sales Tax Revenue")
+print(fig.MVsales.PDI)
+
+#Fit MV Model on Training data w/o PDI
+fit.MV<- lm(`Sales Tax Revenue (millions)` ~ `Year.Qtr.rep`+`Sales Tax Rate`+`Q2 Dummy`+`Q3 Dummy`+`Q4 Dummy`, data=data.final.train)
+summary(fit.MV)
+#Predict on Test Data and Train Data
+out.MVsales.nopdi.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.MV,data.final.train)))
+out.MVsales.nopdi.test<-as.data.frame(cbind(Year[127:132],Qtr[127:132],predict(fit.MV,data.final.test)))
+names(out.MVsales.nopdi.train)<-c("Year","Qtr","MVsales.nopdi.InSampleForecast")
+names(out.MVsales.nopdi.test)<-c("Year","Qtr","MVsales.nopdi.TestDataForecast")
+##predict vs. actuals
+fig.MVsales.nopdi<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = Year,y=`Sales Tax Revenue (millions)`), color="black") +
+  geom_line(data=out.MVsales.nopdi.train, aes(x = Year,y=MVsales.nopdi.InSampleForecast), color="red") +
+  geom_line(data=out.MVsales.nopdi.test, aes(x = Year,y=MVsales.nopdi.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Millions, $")+
+  ggtitle("Sales Tax Revenue")
+print(fig.MVsales.nopdi)
+
+                      ###test sales tax models for accuracy###
+actual<-PIT_RST_Data_cleaned_with_predicted_IVs$`Sales Tax Revenue (millions)`[1:126]
+
+MPE.TTsales<-mean((out.TT.train$TT.InSampleForecast-actual)/actual)
+MPE.MVsales.pdi<-mean((out.MVsales.pdi.train$MVsales.pdi.InSampleForecast-actual)/actual)
+MPE.MVsales.nopdi<-mean((out.MVsales.nopdi.train$MVsales.nopdi.InSampleForecast-actual)/actual)
+
+MAPE.TTsales<-mean(abs(out.TT.train$TT.InSampleForecast-actual)/actual)
+MAPE.MVsales.pdi<-mean(abs(out.MVsales.pdi.train$MVsales.pdi.InSampleForecast-actual)/actual)
+MAPE.MVsales.nopdi<-mean(abs(out.MVsales.nopdi.train$MVsales.nopdi.InSampleForecast-actual)/actual)
+
+TT<-c(MPE.TTsales,MAPE.TTsales)
+MVsales.pdi<-c(MPE.MVsales.pdi,MAPE.MVsales.pdi)
+MVsales.nopdi<-c(MPE.MVsales.nopdi,MAPE.MVsales.nopdi)
+stat<-c("MPE","MAPE")
+
+tabledata<-as.data.frame(cbind(stat,TT,MVsales.pdi,MVsales.nopdi))
+names(tabledata)<-c("Statistic","Time Trend","MVpdi","MVnopdi")
+
+                          ###Income Tax Preliminary Forecasts###
+
+#Fit Simple Time Trend Model on Training data
+fit.TTincome<- lm(`Individual Income Tax Revenue (millions)` ~ `Year.Qtr.rep`, data=data.final.train)
+summary(fit.TTincome)
+#Predict on Test Data and Train Data
+out.TTincome.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.TTincome,data.final.train)))
+out.TTincome.test<-as.data.frame(cbind(Year[127:132],Qtr[127:132],predict(fit.TTincome,data.final.test)))
+names(out.TTincome.train)<-c("Year","Qtr","TTincome.InSampleForecast")
+names(out.TTincome.test)<-c("Year","Qtr","TTincome.TestDataForecast")
+##predict vs. actuals
+fig.TTincome<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = Year,y=`Individual Income Tax Revenue (millions)`), color="black") +
+  geom_line(data=out.TTincome.train, aes(x = Year,y=TTincome.InSampleForecast), color="red") +
+  geom_line(data=out.TTincome.test, aes(x = Year,y=TTincome.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Millions, $")+
+  ggtitle("Individual Income Tax Revenue")
+print(fig.TTincome)
+
+#Fit MV Model on Training data
+fit.MVincome<- lm(`Individual Income Tax Revenue (millions)` ~ `Year.Qtr.rep`+`Income Tax Rate`+`Personal Income (millions)`+`Unemployment Rate`+`Q2 Dummy`+`Q3 Dummy`+`Q4 Dummy`, data=data.final.train)
+summary(fit.MVincome)
+#Predict on Test Data and Train Data
+out.MVincome.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.MVincome,data.final.train)))
+out.MVincome.test<-as.data.frame(cbind(Year[127:132],Qtr[127:132],predict(fit.MVincome,data.final.test)))
+names(out.MVincome.train)<-c("Year","Qtr","MVincome.InSampleForecast")
+names(out.MVincome.test)<-c("Year","Qtr","MVincome.TestDataForecast")
+##predict vs. actuals
+fig.MVincome<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = Year,y=`Individual Income Tax Revenue (millions)`), color="black") +
+  geom_line(data=out.MVincome.train, aes(x = Year,y=MVincome.InSampleForecast), color="red") +
+  geom_line(data=out.MVincome.test, aes(x = Year,y=MVincome.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Millions, $")+
+  ggtitle("Individual Income Tax Revenue")
+print(fig.MVincome)
+
+###income tax AR###
+##fit
+fit.ur.income<- lm(`Individual Income Tax Revenue (millions)` ~ Year.Qtr.rep+lag(`Individual Income Tax Revenue (millions)`,1)+`Q2 Dummy`+`Q3 Dummy`+`Q4 Dummy`+Recession, data=data.final.train)
+summary(fit.ur.income)
+##I thought about using dummy variables for cycles in the UR, but it didn't make a large difference so I kept it simple with just a lag
+data.ar.income.test<-PIT_RST_Data_cleaned_with_predicted_IVs[which(PIT_RST_Data_cleaned_with_predicted_IVs$`Fiscal Year`>=2021),]
+
+##predict
+out.ur.income.train<-as.data.frame(cbind(Year[1:126],Qtr[1:126],predict(fit.ur.income,data.final.train)))
+out.ur.income.test<-as.data.frame(cbind(Year[125:132],Qtr[125:132],predict(fit.ur.income,data.ar.income.test)))
+names(out.ur.income.train)<-c("Year","Qtr","UR.income.InSampleForecast")
+names(out.ur.income.test)<-c("Year","Qtr","UR.income.TestDataForecast")
+##predict vs. actuals
+fig.ur.income<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_without_predicted_IVs, aes(x = Year,y=`Individual Income Tax Revenue (millions)`), color="black") +
+  geom_line(data=out.ur.income.train, aes(x = Year,y=UR.income.InSampleForecast), color="red") +
+  geom_line(data=out.ur.income.test, aes(x = Year,y=UR.income.TestDataForecast), color="green") +
+  theme(axis.text.x = element_text(angle=90),legend.justification = c("left","bottom")) + 
+  labs(x="Year",y="Individual Income Tax")+
+  ggtitle("IN Individual Income Tax 1989-2020")
+print(fig.ur.income)
+
+                ###test income tax models for accuracy###
+actual.ar<-PIT_RST_Data_cleaned_with_predicted_IVs$`Sales Tax Revenue (millions)`[2:126]
+MPE.TTincome<-mean((out.TTincome.train$TTincome.InSampleForecast-actual)/actual)
+MPE.MVincome<-mean((out.MVincome.train$MVincome.InSampleForecast-actual)/actual)
+MPE.ur.income<-mean((out.ur.income.train$UR.income.InSampleForecast[2:126]-actual.ar)/actual.ar)
+
+MAPE.TTincome<-mean(abs(out.TTincome.train$TTincome.InSampleForecast-actual)/actual)
+MAPE.MVincome<-mean(abs(out.MVincome.train$MVincome.InSampleForecast-actual)/actual)
+MAPE.ur.income<-mean(abs(out.ur.income.train$UR.income.InSampleForecast[2:126]-actual.ar)/actual.ar)
+
+TTincome<-c(MPE.TTincome,MAPE.TTincome)
+MVincome<-c(MPE.MVincome,MAPE.MVincome)
+ARincome<-c(MPE.ur.income,MAPE.ur.income)
+stat<-c("MPE","MAPE")
+
+tabledata.income<-as.data.frame(cbind(stat,TTincome,MVincome,ARincome))
+names(tabledata.income)<-c("Statistic","Time Trend","MVincome","ARincome")
+
+                        ###Final Model Forecasts###
+
+#Fit Final Sales Model on Final Data
+fit.sales.final<- lm(`Sales Tax Revenue (millions)` ~ `Year.Qtr.rep`+`Sales Tax Rate`+`Q2 Dummy`+`Q3 Dummy`+`Q4 Dummy`+`IN Personal Disposable Income as Percentage of US (millions)`, data=PIT_RST_Data_cleaned_with_predicted_IVs)
+summary(fit.sales.final)
+#Predict
+out.sales.final<-as.data.frame(cbind(Year[1:132],Qtr[1:132],predict(fit.sales.final,PIT_RST_Data_cleaned_with_predicted_IVs)))
+names(out.sales.final)<-c("Year","Qtr","Sales Forecast")
+##predict vs. actuals
+fig.sales.final<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = interaction(`Calendar Year`,`Calendar Qtr`,lex.order = TRUE),y=`Sales Tax Revenue (millions)`),group=1, color="black") +
+  geom_line(data=out.sales.final, linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Sales Forecast`,group=1), color="red") +
+  annotate(geom = "text",x=seq_len(nrow(out.sales.final)),y=34,label=out.sales.final$Qtr,size=0)+
+  annotate(geom = "text", x= 2.5 + 4 * (0:33),y=28, label=unique(out.sales.final$Year),size=3,angle=90)+
+  theme(axis.text.x = element_blank()) +
+  labs(x="Year",y="Millions, $")+
+  ggtitle("Figure 1: Sales Tax Revenue")
+print(fig.sales.final)
+
+#Fit Final Income Model on Final data
+fit.income.final<- lm(`Individual Income Tax Revenue (millions)` ~ `Year.Qtr.rep`+`Income Tax Rate`+`Personal Income (millions)`+`Unemployment Rate`+`Q2 Dummy`+`Q3 Dummy`+`Q4 Dummy`,data=PIT_RST_Data_cleaned_with_predicted_IVs)
+summary(fit.income.final)
+#Predict
+out.income.final<-as.data.frame(cbind(Year[1:132],Qtr[1:132],predict(fit.income.final,PIT_RST_Data_cleaned_with_predicted_IVs)))
+names(out.income.final)<-c("Year","Qtr","Income Forecast")
+##predict vs. actuals
+Year.Qtr.rep<-c(1:132)
+out.income.final<-cbind(out.income.final,Year.Qtr.rep,PIT_RST_Data_cleaned_with_predicted_IVs$Year.Qtr)
+out.income.final<-rename(out.income.final,c('PIT_RST_Data_cleaned_with_predicted_IVs$Year.Qtr'='Year.Qtr'))
+fig.income.final<-ggplot() +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = interaction(`Calendar Year`,`Calendar Qtr`,lex.order = TRUE),y=`Individual Income Tax Revenue (millions)`,group=1), color="black") +
+  geom_line(data=out.income.final,linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Income Forecast`,group=1), color="red") +
+  annotate(geom = "text",x=seq_len(nrow(out.income.final)),y=34,label=out.income.final$Qtr,size=0)+
+  annotate(geom = "text", x= 2.5 + 4 * (0:33),y=28, label=unique(out.income.final$Year),size=3,angle=90)+
+  theme(axis.text.x = element_blank()) +
+  labs(x="Year",y="Millions, $")+
+  ggtitle("Figure 2: Individual Income Tax Revenue")
+print(fig.income.final)
+
+##results as a table
+tail(out.sales.final,n=6)
+tail(out.income.final,n=6)
+
+
+
+##table to report estimates##
+fy<-c("2021","2021","Total","2022","2022","2022","2022","Total")
+q<-c("3","4","","1","2","3","4","")
+pit<-c(round(out.income.final$`Income Forecast`[127],digits=2),
+       round(out.income.final$`Income Forecast`[128],digits=2),
+       round(sum(out.income.final$`Income Forecast`[127:128]),digits=2),
+       round(out.income.final$`Income Forecast`[129],digits=2),
+       round(out.income.final$`Income Forecast`[130],digits=2),
+       round(out.income.final$`Income Forecast`[131],digits=2),
+       round(out.income.final$`Income Forecast`[132],digits=2),
+       round(sum(out.income.final$`Income Forecast`[129:132]),digits=2))
+
+
+rst<-c(round(out.sales.final$`Sales Forecast`[127],digits=2),
+       round(out.sales.final$`Sales Forecast`[128],digits=2),
+       round(sum(out.sales.final$`Sales Forecast`[127:128]),digits=2),
+       round(out.sales.final$`Sales Forecast`[129],digits=2),
+       round(out.sales.final$`Sales Forecast`[130],digits=2),
+       round(out.sales.final$`Sales Forecast`[131],digits=2),
+       round(out.sales.final$`Sales Forecast`[132],digits=2),
+       round(sum(out.sales.final$`Sales Forecast`[129:132]),digits=2))
+tot<-pit+rst
+
+rst<-dollar_format(largest_with_cents = 1000)(rst)
+pit<-dollar_format(largest_with_cents = 1000)(pit)
+tot<-dollar_format(largest_with_cents = 1000)(tot)
+tab1<-as.data.frame(cbind(fy,q,pit,rst,tot))
+names(tab1)=c("Fiscal Year","Quarter","PIT (Millions)","RST (Millions)","Total (Millions)")
+```
+## Memo
+
+To: Indiana State Budget Committee
+
+From: Andrew J. Poulter
+
+Date: `r format(Sys.time(), "%B %d, %Y")`
+
+Re: Revenue Forecast for Q3FY2021-Q4FY2022
+
+
+-------------------------------------------------------------------------------
+
+Per your request, I have completed quarterly forecasts for Individual Income Tax Revenue (PIT) and Retail Sales Tax Revenue (RST) to aid you in your efforts to prepare the state budget. The forecasts cover the last two quarters of Fiscal Year 2021 and each quarter in Fiscal Year 2022. The forecasts can be found in Table 1 below. RST passed the \$2 billion mark for the first time in FY2020 and will hover around that same range through FY2022. Below Table 1, Figure 1 displays the actual RST revenues for each quarter since 1989 with the black line. The red dotted line shows how well my model has predicted the actual revenues in those same years, as well as the predicted revenues through FY2022. Apart from the Great Recession (FY2007-2009) and COVID-19 (FY2020), the model has produced accurate predictions.
+
+```{r, echo=FALSE,warning=FALSE}
+tab1 %>%
+  kbl(caption="Table 1: Indiana Income Tax Rates")%>%
+  kable_styling(bootstrap_options = c("striped","hover")) %>%
+  add_indent(positions = c(3,8),level_of_indent = 1) %>%
+  row_spec(c(3,8), bold=T)
+
+print(fig.sales.final)
+```
+
+PIT fluctuates heavily with each quarter, in recent years ranging from `r min(pit)`-`r pit[7]` millions through FY2022 with quarter 4 producing the most PIT each year. The total PIT forecast for FY2022 is `r pit[8]`. Figure 2 highlights the strong quarterly fluctuations in actual revenues, with the black trend line showing actual revenues and the red dotted line showing the predicted revenues from my model. The model doesn't quite capture the full quarterly variation starting in 2017.
+
+```{r, echo=FALSE,warning=FALSE}
+print(fig.income.final)
+```
+
+Both forecasts were done using multivariate regression, meaning that the revenue forecasts were based on revenue growth over previous years and the values of other relevant data in those years. For PIT, the revenue forecast was influenced by time, the IN income tax rate, aggregate personal income for Hoosiers, the IN unemployment rate, and the difference between revenues in each quarter. The RST forecast included time, the sales tax rate, aggregate disposable IN for Hoosiers^[The quarter dummy variables were particularly important in order to capture the seasonality in the data. The revenues for both sales and income followed a quarterly pattern throughout each year and the dummy variables allowed the forecasts to react similarly.], and the difference between sales in each quarter.^[Personal Disposable Income (PDI) data for IN was not available in quarters. Instead, I took the PDI for the U.S. and adjusted it according to the percentage of the U.S. population that Indiana made up each year in the data.] You can find the equations for both models at the bottom of this report.
+
+Because I included additional variables besides past revenue and time, I had to forecast each of those variables before using them to produce the revenue estimates. Using data from the U.S. Census Bureau and the Bureau of Economic Analysis, I produced simple trend forecasts for each independent variable (except for unemployment rate^[The estimates for unemployment rate used a lagged variable for unemployment to influence each subsequent prediction.]), meaning that their forecasts are simply based on their past growth from year-to-year. Some of these additional variables only had values back to `r Year[1]`, so the data for the revenue estimate only go back to `r Year[1]`.
+
+### Equations and Notes
+
+$$PIT = Time + Income Tax Rate + Personal Income + Unemployment Rate + Q2 Dummy + Q3 Dummy + Q4 Dummy$$
+
+
+$$RST = Time + Sales Tax Rate + Q2 Dummy + Q3 Dummy + Q4 Dummy + IN Personal Disposable Income as Percentage of US$$

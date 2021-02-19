@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2021-02-19" />
+
+<title> V609: Assignment 1</title>
+
+<script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Personal Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About Me</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore"><img src="IUsnip.png" style="float: top;"/> V609: Assignment 1</h1>
+<h4 class="author"><div class="line-block">Andrew J. Poulter<br />
+MPA Student<br />
+Paul H. O’Neill School of Public &amp; Environmental Affairs<br />
+<a href="mailto:andpoult@iu.edu" class="email">andpoult@iu.edu</a></div></h4>
+<h4 class="date">February 19, 2021</h4>
+
+</div>
+
+
+<div id="memo" class="section level2">
+<h2>Memo</h2>
+<p>To: Indiana State Budget Committee</p>
+<p>From: Andrew J. Poulter</p>
+<p>Date: February 19, 2021</p>
+<p>Re: Revenue Forecast for Q3FY2021-Q4FY2022</p>
+<hr />
+<p>Per your request, I have completed quarterly forecasts for Individual Income Tax Revenue (PIT) and Retail Sales Tax Revenue (RST) to aid you in your efforts to prepare the state budget. The forecasts cover the last two quarters of Fiscal Year 2021 and each quarter in Fiscal Year 2022. The forecasts can be found in Table 1 below. RST passed the $2 billion mark for the first time in FY2020 and will hover around that same range through FY2022. Below Table 1, Figure 1 displays the actual RST revenues for each quarter since 1989 with the black line. The red dotted line shows how well my model has predicted the actual revenues in those same years, as well as the predicted revenues through FY2022. Apart from the Great Recession (FY2007-2009) and COVID-19 (FY2020), the model has produced accurate predictions.</p>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<caption>
+Table 1: Indiana Income Tax Rates
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Fiscal Year
+</th>
+<th style="text-align:left;">
+Quarter
+</th>
+<th style="text-align:left;">
+PIT (Millions)
+</th>
+<th style="text-align:left;">
+RST (Millions)
+</th>
+<th style="text-align:left;">
+Total (Millions)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+$1,349
+</td>
+<td style="text-align:left;">
+$2,045
+</td>
+<td style="text-align:left;">
+$3,394
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+$1,754
+</td>
+<td style="text-align:left;">
+$2,052
+</td>
+<td style="text-align:left;">
+$3,806
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;font-weight: bold;" indentlevel="1">
+Total
+</td>
+<td style="text-align:left;font-weight: bold;">
+</td>
+<td style="text-align:left;font-weight: bold;">
+$3,103
+</td>
+<td style="text-align:left;font-weight: bold;">
+$4,097
+</td>
+<td style="text-align:left;font-weight: bold;">
+$7,200
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+1
+</td>
+<td style="text-align:left;">
+$1,427
+</td>
+<td style="text-align:left;">
+$2,101
+</td>
+<td style="text-align:left;">
+$3,527
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+$1,322
+</td>
+<td style="text-align:left;">
+$2,061
+</td>
+<td style="text-align:left;">
+$3,383
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+$1,373
+</td>
+<td style="text-align:left;">
+$2,089
+</td>
+<td style="text-align:left;">
+$3,461
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+$1,780
+</td>
+<td style="text-align:left;">
+$2,095
+</td>
+<td style="text-align:left;">
+$3,875
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;font-weight: bold;" indentlevel="1">
+Total
+</td>
+<td style="text-align:left;font-weight: bold;">
+</td>
+<td style="text-align:left;font-weight: bold;">
+$5,901
+</td>
+<td style="text-align:left;font-weight: bold;">
+$8,346
+</td>
+<td style="text-align:left;font-weight: bold;">
+$14,246
+</td>
+</tr>
+</tbody>
+</table>
+<p><img src="HW1_report_2_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>PIT fluctuates heavily with each quarter, in recent years ranging from $1,322-$1,780 millions through FY2022 with quarter 4 producing the most PIT each year. The total PIT forecast for FY2022 is $5,901. Figure 2 highlights the strong quarterly fluctuations in actual revenues, with the black trend line showing actual revenues and the red dotted line showing the predicted revenues from my model. The model doesn’t quite capture the full quarterly variation starting in 2017.</p>
+<p><img src="HW1_report_2_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Both forecasts were done using multivariate regression, meaning that the revenue forecasts were based on revenue growth over previous years and the values of other relevant data in those years. For PIT, the revenue forecast was influenced by time, the IN income tax rate, aggregate personal income for Hoosiers, the IN unemployment rate, and the difference between revenues in each quarter. The RST forecast included time, the sales tax rate, aggregate disposable IN for Hoosiers<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, and the difference between sales in each quarter.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> You can find the equations for both models at the bottom of this report.</p>
+<p>Because I included additional variables besides past revenue and time, I had to forecast each of those variables before using them to produce the revenue estimates. Using data from the U.S. Census Bureau and the Bureau of Economic Analysis, I produced simple trend forecasts for each independent variable (except for unemployment rate<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>), meaning that their forecasts are simply based on their past growth from year-to-year. Some of these additional variables only had values back to 1989, so the data for the revenue estimate only go back to 1989.</p>
+<div id="equations-and-notes" class="section level3">
+<h3>Equations and Notes</h3>
+<p><span class="math display">\[PIT = Time + Income Tax Rate + Personal Income + Unemployment Rate + Q2 Dummy + Q3 Dummy + Q4 Dummy\]</span></p>
+<p><span class="math display">\[RST = Time + Sales Tax Rate + Q2 Dummy + Q3 Dummy + Q4 Dummy + IN Personal Disposable Income as Percentage of US\]</span></p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>The quarter dummy variables were particularly important in order to capture the seasonality in the data. The revenues for both sales and income followed a quarterly pattern throughout each year and the dummy variables allowed the forecasts to react similarly.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Personal Disposable Income (PDI) data for IN was not available in quarters. Instead, I took the PDI for the U.S. and adjusted it according to the percentage of the U.S. population that Indiana made up each year in the data.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+<li id="fn3"><p>The estimates for unemployment rate used a lagged variable for unemployment to influence each subsequent prediction.<a href="#fnref3" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

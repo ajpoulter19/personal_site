@@ -1,0 +1,265 @@
+---
+title: "<img src=\"IUsnip.png\" style=\"float: top;\"/> V609: Assignment 1"
+author: |
+  | Andrew J. Poulter
+  | MPA Student
+  | Paul H. O'Neill School of Public & Environmental Affairs
+  | andpoult@iu.edu
+date: '`r format(Sys.time(), "%B %d, %Y")`'
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(forecast)
+library(readxl)
+library(writexl)
+library(ggplot2)
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(reshape)
+library(reshape2)
+library(knitr)
+library(kableExtra)
+library(dynlm)
+library(texreg)
+library(scales)
+library(useful)
+library(sqldf)
+
+##import data##
+HW2_data <- read_excel("C:/Users/Andrew/OneDrive/Spring 2021/Revenue Theory/HW 2/HW2.data.xlsx")
+##the April actual in 2020 is a bad estimator because COVID disrupted tax collection. I switched the April value to 2019 actual instead of 2020. Lines 17-18 shift the April column down one. Line 19 gets rid of all the other columns.
+HW2_data_lagApr<-HW2_data%>%
+  mutate(APRIL=lag(APRIL))
+HW2_data_lagApr<-HW2_data_lagApr[c(26),]
+
+                ##calculate most accurate monthly shares
+##calculate percentage share of each month from 2019-2013
+july_shares <- HW2_data[25:19,2]/HW2_data[25:19,14]
+aug_shares <- HW2_data[25:19,3]/HW2_data[25:19,14]
+sep_shares <- HW2_data[25:19,4]/HW2_data[25:19,14]
+oct_shares <- HW2_data[25:19,5]/HW2_data[25:19,14]
+nov_shares <- HW2_data[25:19,6]/HW2_data[25:19,14]
+dec_shares <- HW2_data[25:19,7]/HW2_data[25:19,14]
+jan_shares <- HW2_data[25:19,8]/HW2_data[25:19,14]
+feb_shares <- HW2_data[25:19,9]/HW2_data[25:19,14]
+mar_shares <- HW2_data[25:19,10]/HW2_data[25:19,14]
+apr_shares <- HW2_data[25:19,11]/HW2_data[25:19,14]
+may_shares <- HW2_data[25:19,12]/HW2_data[25:19,14]
+june_shares <- HW2_data[25:19,13]/HW2_data[25:19,14]
+#create data frame out of previous separate shares
+monthly.shares<-as.data.frame(cbind(july_shares,aug_shares,sep_shares,oct_shares,nov_shares,dec_shares,jan_shares,feb_shares,mar_shares,apr_shares,may_shares,june_shares))
+
+##calculate monthly average shares over various years
+"2019.avg" <- (monthly.shares[1,])
+"2018-19.avg" <- (monthly.shares[1,]+monthly.shares[2,])/2
+"2017-19.avg" <- (monthly.shares[1,]+monthly.shares[2,]+
+                    monthly.shares[3,])/3
+"2016-19.avg" <- (monthly.shares[1,]+monthly.shares[2,]+
+                    monthly.shares[3,]+monthly.shares[4,])/4
+"2015-19.avg" <- (monthly.shares[1,]+monthly.shares[2,]+
+                    monthly.shares[3,]+monthly.shares[4,]+
+                    monthly.shares[5,])/5
+"2014-19.avg" <- (monthly.shares[1,]+monthly.shares[2,]+
+                    monthly.shares[3,]+monthly.shares[4,]+
+                    monthly.shares[5,]+monthly.shares[6,])/6
+"2013-19.avg" <- (monthly.shares[1,]+monthly.shares[2,]+
+                    monthly.shares[3,]+monthly.shares[4,]+
+                    monthly.shares[5,]+monthly.shares[6,]+
+                     monthly.shares[7,])/7
+##create data frame from separate averages
+average.shares.data<-as.data.frame(rbind(`2019.avg`,`2018-19.avg`,`2017-19.avg`,`2016-19.avg`,`2015-19.avg`,`2014-19.avg`,`2013-19.avg`))
+
+###create targets for the different share averages: Line 59 makes the value of 2020's actual total revenue an integer. Line 59 multiplies each cell containing a monthly average share by the 2020 actual total to create targets for 2020.
+"2020actual"<-HW2_data[[26,14]]
+targets<-average.shares.data*`2020actual`
+
+##this section compares the targets for 2020 built by different year combinations to the actual 2020 monthly revenues and calculates the absolute percentage error for each month
+##percentage error: (actual-target)/actual
+"2019.diff" <- abs((HW2_data_lagApr[,2:13])-(targets[1,]))/HW2_data_lagApr[,2:13]
+"2018-19.diff" <- abs((HW2_data_lagApr[,2:13])-(targets[2,]))/HW2_data_lagApr[,2:13]
+"2017-19.diff" <- abs((HW2_data_lagApr[,2:13])-(targets[3,]))/HW2_data_lagApr[,2:13]
+"2016-19.diff" <- abs((HW2_data_lagApr[,2:13])-(targets[4,]))/HW2_data_lagApr[,2:13]
+"2015-19.diff" <- abs((HW2_data_lagApr[,2:13])-(targets[5,]))/HW2_data_lagApr[,2:13]
+"2014-19.diff" <- abs((HW2_data_lagApr[,2:13])-(targets[6,]))/HW2_data_lagApr[,2:13]
+"2013-19.diff" <- abs((HW2_data_lagApr[,2:13])-(targets[7,]))/HW2_data_lagApr[,2:13]
+##create dataframe from monthly averages across different year combos
+monthly.errors <- 100*(as.data.frame(rbind(`2019.diff`,`2018-19.diff`,`2017-19.diff`,`2016-19.diff`,`2015-19.diff`,`2014-19.diff`,`2013-19.diff`)))
+##create a column for the average yearly percentage error and combine it with the monthly errors dataframe
+yearly.avg.error<-as.data.frame(rowMeans(monthly.errors))
+names(yearly.avg.error)<-c("Average Error")
+years.inverse<-as.data.frame(c(2019:2013))
+names(years.inverse)<-c("Fiscal Year")
+monthly.errors.final<-cbind(monthly.errors,yearly.avg.error,years.inverse)
+monthly.errors.final <- monthly.errors.final %>%
+  select("Fiscal Year",everything())
+##create targets using 2019 data
+"2022.actual"<-c(6369.3)
+"2022.targets"<-average.shares.data[1,]*`2022.actual`
+
+##Part 2##
+##targets minus actuals divided by actuals to get monthly percentage errors
+"2020.error"<-(((HW2_data_lagApr[1,2:13])-(HW2_data[36,2:13]))/(HW2_data_lagApr[1,2:13]))
+"2019.error"<-(((HW2_data[25,2:13])-(HW2_data[35,2:13]))/(HW2_data[25,2:13]))
+"2018.error"<-(((HW2_data[24,2:13])-(HW2_data[34,2:13]))/(HW2_data[24,2:13]))
+"2017.error"<-(((HW2_data[23,2:13])-(HW2_data[33,2:13]))/(HW2_data[23,2:13]))
+"2016.error"<-(((HW2_data[22,2:13])-(HW2_data[32,2:13]))/(HW2_data[22,2:13]))
+"2015.error"<-(((HW2_data[21,2:13])-(HW2_data[31,2:13]))/(HW2_data[21,2:13]))
+"2014.error"<-(((HW2_data[20,2:13])-(HW2_data[30,2:13]))/(HW2_data[20,2:13]))
+"2013.error"<-(((HW2_data[19,2:13])-(HW2_data[29,2:13]))/(HW2_data[19,2:13]))
+"2012.error"<-(((HW2_data[18,2:13])-(HW2_data[28,2:13]))/(HW2_data[18,2:13]))
+"2011.error"<-(((HW2_data[17,2:13])-(HW2_data[27,2:13]))/(HW2_data[17,2:13]))
+
+##creating a new column for fiscal year 2011-2020
+"Fiscal Year" <- c(2011:2020)
+
+##create a new data set with the percentage errors as the rows
+error.data<-as.data.frame(rbind(`2011.error`,`2012.error`,`2013.error`,`2014.error`,`2015.error`,`2016.error`,`2017.error`,`2018.error`,`2019.error`,`2020.error`))
+
+##turn values into percentages
+error.data<-abs(error.data*100)
+
+##add fiscal year column
+error.data <- cbind(error.data,`Fiscal Year`)
+
+##move fiscal year column from last to first
+error.data <- error.data %>%
+  select("Fiscal Year",everything())
+
+##calculate average percentage gap in each year
+error.averages<-as.data.frame(rowMeans(error.data[2:13]))
+error.averages<-cbind(`Fiscal Year`,error.averages)
+names(error.averages)<-c("Fiscal Year","Average Absolute Error")
+
+## $ amount of error for final table
+"2020.$error"<-(((HW2_data_lagApr[1,2:13])-(HW2_data[36,2:13])))
+"2020.$error.adj"<-(((HW2_data_lagApr[1,2:13])-(HW2_data[36,2:13])))
+"2019.$error"<-(((HW2_data[25,2:13])-(HW2_data[35,2:13])))
+"2018.$error"<-(((HW2_data[24,2:13])-(HW2_data[34,2:13])))
+"2017.$error"<-(((HW2_data[23,2:13])-(HW2_data[33,2:13])))
+"2016.$error"<-(((HW2_data[22,2:13])-(HW2_data[32,2:13])))
+"2015.$error"<-(((HW2_data[21,2:13])-(HW2_data[31,2:13])))
+"2014.$error"<-(((HW2_data[20,2:13])-(HW2_data[30,2:13])))
+"2013.$error"<-(((HW2_data[19,2:13])-(HW2_data[29,2:13])))
+"2012.$error"<-(((HW2_data[18,2:13])-(HW2_data[28,2:13])))
+"2011.$error"<-(((HW2_data[17,2:13])-(HW2_data[27,2:13])))
+
+##create dataframe for $ errors
+`$error.data`<-abs(as.data.frame(rbind(`2011.$error`,`2012.$error`,`2013.$error`,`2014.$error`,`2015.$error`,`2016.$error`,`2017.$error`,`2018.$error`,`2019.$error`,`2020.$error`)))
+
+##add fiscal year column
+`$error.data` <- cbind(`$error.data`,`Fiscal Year`)
+
+##move fiscal year column from last to first
+`$error.data` <- `$error.data` %>%
+  select("Fiscal Year",everything())
+
+##calculate average $ error in each year
+`$error.averages`<-as.data.frame(rowMeans(`$error.data`[2:13]))
+`$error.averages`<-cbind(`Fiscal Year`,`$error.averages`)
+names(`$error.averages`)<-c("Fiscal Year","Average Dollar Error")
+
+`$error.data.notabs`<-as.data.frame(rbind(`2011.$error`,`2012.$error`,`2013.$error`,`2014.$error`,`2015.$error`,`2016.$error`,`2017.$error`,`2018.$error`,`2019.$error`,`2020.$error`))
+`$error.data.notabs` <- cbind(`$error.data.notabs`,`Fiscal Year`)
+`$error.data.notabs` <- `$error.data.notabs` %>%
+  select("Fiscal Year",everything())
+names(`$error.data.notabs`)<-c("Fiscal Year","Jul.","Aug.","Sep.","Oct.","Nov.","Dec.","Jan.","Feb.","Mar.","Apr.","May","Jun.")
+
+                    ###create tables and graphs###
+##tables for part 1
+tab.fnl<-cbind(monthly.errors.final)
+tab.fnl<-round(tab.fnl,2)
+tab.fnl$`Fiscal Year`= c("19","18-19","17-19","16-19","15-19","14-19","13-19")
+names(tab.fnl)<-c("Fiscal Years Averaged","Jul.","Aug.","Sep.","Oct.","Nov.","Dec.","Jan.","Feb.","Mar.","Apr.","May","Jun.","Yearly Average Errors")
+
+`2022.targets`<-as.integer(c(`2022.targets`,`2022.actual`))
+`2022.targets`<-dollar_format(largest_with_cents = 10000)(`2022.targets`)
+`2022.targets`<-as.data.frame(rbind(`2022.targets`))
+names(`2022.targets`)<-c("Jul.","Aug.","Sep.","Oct.","Nov.","Dec.","Jan.","Feb.","Mar.","Apr.","May","Jun.","Total")
+##rename row
+rownames(`2022.targets`) = "FY2022"
+
+
+##graphing for part 2
+
+part2.data<-cbind(error.averages,`$error.averages`[,2])
+names(part2.data)<-c("Fiscal Year","Average Absolute Error","$ Error (Millions)")
+###switch columns and rows in error.data
+transposed.data <- as.data.frame(t(round(error.data[-1],digits = 2)))
+colnames(transposed.data) <- error.data[,1]
+months<-c("Jul.","Aug.","Sep.","Oct.","Nov.","Dec.","Jan.","Feb.","Mar.","Apr.","May","Jun")
+transposed.data<- cbind(months,transposed.data)
+
+##graph
+fig1<-ggplot(transposed.data)  +
+  geom_line(data=transposed.data, aes(x = months,y=`2011`,group=1,color="2011"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2012`,group=1,color="2012"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2013`,group=1,color="2013"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2014`,group=1,color="2014"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2015`,group=1,color="2015"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2016`,group=1,color="2016"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2017`,group=1,color="2017"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2018`,group=1,color="2018"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2019`,group=1,color="2019"))+
+  geom_line(data=transposed.data, aes(x = months,y=`2020`,group=1,color="2020"))+
+  labs(x="Month",y="Absolute Percentage Error")+
+  ggtitle("Monthly % Error Between Targets and Actuals")+
+  scale_colour_discrete(name="Fiscal Year")
+print(fig1)
+
+fig2<- ggplot(part2.data,aes(x = `Fiscal Year`,y=`Average Absolute Error`,group=1,label=round(`$ Error (Millions)`,digits = 1)))+
+  geom_point()+
+  geom_text(hjust=1,vjust=1,nudge_x=.5,size=3)+
+  scale_x_discrete(limits=c(2011:2020))+
+  labs(title="Average Absolute Percentage Error per Year",
+       subtitle = "with $ amounts of the percentage errors (millions)")
+print(fig2)  
+
+```
+## Memo
+
+To: Indiana State Budget Committee
+
+From: Andrew J. Poulter
+
+Date: `r format(Sys.time(), "%B %d, %Y")`
+
+Re: Revenue Targets for FY2022
+
+
+-------------------------------------------------------------------------------
+
+### Monthly Targets for FY2022
+
+To create revenue targets for FY2022, I calculated the share of total revenue that each month in FY2019 accounted for as part of the total revenue collection for that year. I then multiplied the value of each monthly share in FY2019 with the total revenue collected in FY2020 to create monthly targets for FY2020. After creating targets for FY2020, I compared them to the actual monthly revenue collected in FY2020 to see how FY2019 shares did in predicting FY2020 actual revenue.
+
+I conducted the same process with various combinations of years going back to FY2013 by calculating average monthly shares across a span of years. The results of those analyses are found in Table 1 and they give a picture for how each combination of years did in predicting actual FY2020 monthly revenues.
+
+```{r cars, echo=FALSE}
+tab.fnl %>%
+  kbl(caption="Table 1: Revenue Target Percentage Errors")%>%
+  kable_styling(bootstrap_options = c("striped","hover"))%>%
+  column_spec(14,bold = T)%>%
+  footnote(general = "When looking at the average percentage error for various combinations of years to the FY2020 actual monthly revenues, there were large errors for April FY2020 compared to any of the estimates because the COVID-19 pandemic disrupted tax collections. It dropped the April actual revenues from 1,233 millions of dollars in FY2019 to 477 millions of dollars in FY2020. Because this impact from the pandemic is an anomaly and not likely to occur again soon, I used the April FY2019 actual revenue to compare to the average share across various years so that the estimates better reflect the norm.")
+  
+```
+
+The table clearly shows that adding more years increases the error of the monthly targets.^[The accuracy appears to turn around with FY2013, but analyses I did not include in this report show that the accuracy does not continue improving.] Due to that, I chose to use the share estimates from FY2019 only, which had the smallest error: `r tab.fnl[1,14]`%. I multiplied the monthly shares from FY2019 with the expected revenue for FY2022 to produce monthly estimates for FY2022. Table 2 displays those estimates.
+
+```{r , echo=FALSE, warning=FALSE}
+`2022.targets` %>%
+  kbl(caption="Table 2: FY2022 Monthly Revenue Targets (Millions)")%>%
+  kable_styling(bootstrap_options = c("striped","hover"))
+```
+
+### Historical Analysis of Targets for FY11-FY20
+
+In addition to the target estimates, I analyzed how well monthly targets over the past 10 years have done compared to actual collections. The graph "Monthly % Error Between Targets and Actuals" below shows the percentage error of each month across the 10 year span.^[As I did in the graph titled Table 1 errors, I used the actual revenue for April FY2019 when comparing the targets of FY2020 to the actual collections in FY2020. This creates a more accurate picture of normal circumstances.] For the most part, the errors are less than 20%, with `r round(min(error.data),digits=2)`% being the lowest. Perhaps more helpful is to see the yearly average percentage error, which is plotted in the graph titled "Average Absolute Percentage Error per Year". Each point shows the average percentage error for the year, with an accompanying number showing the dollar value (millions) of the percentage error. The largest error is `r round(max(part2.data$"Average Absolute Error"),digits=2)`% and the lowest is `r round(min(part2.data$"Average Absolute Error"),digits=2)`%. This suggests that, for the whole year, Indiana often gets relatively close to its overall revenue forecast as positive target errors and negative target errors balance each other out.^[It should be noted that while the figures here suggest the error is always positive - actual revenues exceed the targets - this is not always the case. Sometimes, the actual revenue is lower than the targets, but to create average percentage errors, it was necessary to use absolute values. Data on the proportion of errors that are negative and errors that are positive is available upon request.]
+
+```{r, echo=FALSE, figures-side, fig.show="hold",out.width="50%"}
+
+print(fig1)
+print(fig2)
+```
