@@ -1,5 +1,5 @@
 ---
-title: "<img src=\"IUsnip.png\" style=\"float: top;\"/> V609: Assignment 1"
+title: "<img src=\"IUsnip.png\" style=\"float: top;\"/> V609: Assignment 2"
 author: |
   | Andrew J. Poulter
   | MPA Student
