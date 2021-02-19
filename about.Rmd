@@ -1,0 +1,12 @@
+---
+title: "About"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+-  Name:  Andrew Poulter
+-  Degree: MPA, Policy Analysis
+-  Location: Bloomington, IN
