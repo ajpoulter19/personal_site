@@ -7,3 +7,7 @@ navbar:
       href: index.html
     - text: "About Me"
       href: about.html
+    - text: "Indiana Revenue Forecasting"
+      href: HW1_report_2.html
+    - text: "Indiana Revenue Targets"
+      href: HW2.html
