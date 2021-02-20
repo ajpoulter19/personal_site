@@ -364,7 +364,7 @@ Per your request, I have completed quarterly forecasts for Individual Income Tax
 
 ```{r, echo=FALSE,warning=FALSE}
 tab1 %>%
-  kbl(caption="Table 1: Indiana Income Tax Rates")%>%
+  kbl(caption="Table 1: Indiana Tax Revenue Forecast FY21-FY22")%>%
   kable_styling(bootstrap_options = c("striped","hover")) %>%
   add_indent(positions = c(3,8),level_of_indent = 1) %>%
   row_spec(c(3,8), bold=T)
