@@ -283,13 +283,14 @@ out.sales.final<-as.data.frame(cbind(Year[1:132],Qtr[1:132],predict(fit.sales.fi
 names(out.sales.final)<-c("Year","Qtr","Sales Forecast")
 ##predict vs. actuals
 fig.sales.final<-ggplot() +
-  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = interaction(`Calendar Year`,`Calendar Qtr`,lex.order = TRUE),y=`Sales Tax Revenue (millions)`),group=1, color="black") +
-  geom_line(data=out.sales.final, linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Sales Forecast`,group=1), color="red") +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = interaction(`Calendar Year`,`Calendar Qtr`,lex.order = TRUE),y=`Sales Tax Revenue (millions)`,group=1, color="Actual Revenue")) +
+  geom_line(data=out.sales.final, linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Sales Forecast`,group=1, color="Predicted Revenue")) +
   annotate(geom = "text",x=seq_len(nrow(out.sales.final)),y=34,label=out.sales.final$Qtr,size=0)+
   annotate(geom = "text", x= 2.5 + 4 * (0:33),y=28, label=unique(out.sales.final$Year),size=3,angle=90)+
   theme(axis.text.x = element_blank()) +
-  labs(x="Year",y="Millions, $")+
+  labs(title="Figure 1: Indiana Sales Tax Revenue, 1989-2022 Qtr 2",subtitle = "Predicted and Actual Revenues", x="Year",y="Millions, $")+
   ggtitle("Figure 1: Sales Tax Revenue")
+fig.sales.final <- fig.sales.final + scale_color_manual(values = c("black","red"))
 print(fig.sales.final)
 
 #Fit Final Income Model on Final data
@@ -303,13 +304,13 @@ Year.Qtr.rep<-c(1:132)
 out.income.final<-cbind(out.income.final,Year.Qtr.rep,PIT_RST_Data_cleaned_with_predicted_IVs$Year.Qtr)
 out.income.final<-rename(out.income.final,c('PIT_RST_Data_cleaned_with_predicted_IVs$Year.Qtr'='Year.Qtr'))
 fig.income.final<-ggplot() +
-  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = interaction(`Calendar Year`,`Calendar Qtr`,lex.order = TRUE),y=`Individual Income Tax Revenue (millions)`,group=1), color="black") +
-  geom_line(data=out.income.final,linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Income Forecast`,group=1), color="red") +
+  geom_line(data=PIT_RST_Data_cleaned_with_predicted_IVs, aes(x = interaction(`Calendar Year`,`Calendar Qtr`,lex.order = TRUE),y=`Individual Income Tax Revenue (millions)`,group=1, color="Actual Revenue")) +
+  geom_line(data=out.income.final,linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Income Forecast`,group=1, color="Predicted Revenue")) +
   annotate(geom = "text",x=seq_len(nrow(out.income.final)),y=34,label=out.income.final$Qtr,size=0)+
   annotate(geom = "text", x= 2.5 + 4 * (0:33),y=28, label=unique(out.income.final$Year),size=3,angle=90)+
   theme(axis.text.x = element_blank()) +
-  labs(x="Year",y="Millions, $")+
-  ggtitle("Figure 2: Individual Income Tax Revenue")
+  labs(title="Figure 2: Indiana Individual Income Tax Revenue, 1989-2022 Qtr 2",subtitle = "Predicted and Actual Revenues", x="Year",y="Millions, $")
+fig.income.final <- fig.income.final + scale_color_manual(values = c("black","red"))
 print(fig.income.final)
 
 ##results as a table
@@ -360,7 +361,7 @@ Re: Revenue Forecast for Q3FY2021-Q4FY2022
 
 -------------------------------------------------------------------------------
 
-Per your request, I have completed quarterly forecasts for Individual Income Tax Revenue (PIT) and Retail Sales Tax Revenue (RST) to aid you in your efforts to prepare the state budget. The forecasts cover the last two quarters of Fiscal Year 2021 and each quarter in Fiscal Year 2022. The forecasts can be found in Table 1 below. RST passed the \$2 billion mark for the first time in FY2020 and will hover around that same range through FY2022. Below Table 1, Figure 1 displays the actual RST revenues for each quarter since 1989 with the black line. The red dotted line shows how well my model has predicted the actual revenues in those same years, as well as the predicted revenues through FY2022. Apart from the Great Recession (FY2007-2009) and COVID-19 (FY2020), the model has produced accurate predictions.
+Per your request, I have completed quarterly forecasts for Individual Income Tax Revenue (PIT) and Retail Sales Tax Revenue (RST) to aid you in your efforts to prepare the state budget. The forecasts cover the last two quarters of Fiscal Year 2021 and each quarter in Fiscal Year 2022. The forecasts can be found in Table 1 below. RST passed the \$2 billion mark for the first time in FY2020 and will hover around that same range through FY2022. Below Table 1, Figure 1 displays the actual RST revenues for each quarter since 1989 with the black line. The red dotted line shows how well my model predicted the actual revenues in those same years, as well as the predicted revenues through FY2022. Apart from the Great Recession (FY2007-2009) and COVID-19 (FY2020), the model has produces accurate predictions.
 
 ```{r, echo=FALSE,warning=FALSE}
 tab1 %>%
@@ -378,9 +379,9 @@ PIT fluctuates heavily with each quarter, in recent years ranging from `r min(pi
 print(fig.income.final)
 ```
 
-Both forecasts were done using multivariate regression, meaning that the revenue forecasts were based on revenue growth over previous years and the values of other relevant data in those years. For PIT, the revenue forecast was influenced by time, the IN income tax rate, aggregate personal income for Hoosiers, the IN unemployment rate, and the difference between revenues in each quarter. The RST forecast included time, the sales tax rate, aggregate disposable IN for Hoosiers^[The quarter dummy variables were particularly important in order to capture the seasonality in the data. The revenues for both sales and income followed a quarterly pattern throughout each year and the dummy variables allowed the forecasts to react similarly.], and the difference between sales in each quarter.^[Personal Disposable Income (PDI) data for IN was not available in quarters. Instead, I took the PDI for the U.S. and adjusted it according to the percentage of the U.S. population that Indiana made up each year in the data.] You can find the equations for both models at the bottom of this report.
+Both forecasts use multivariate regression, meaning that the revenue forecasts are based on revenue growth over previous years as well as the values of other relevant data in those years. For PIT, the revenue forecast includes time, the IN income tax rate, aggregate personal income for Hoosiers, the IN unemployment rate, and the difference between revenues in each quarter. The RST forecast includes time, the sales tax rate, aggregate disposable IN for Hoosiers^[The quarter dummy variables were particularly important in order to capture the seasonality in the data. The revenues for both sales and income followed a quarterly pattern throughout each year and the dummy variables allowed the forecasts to react similarly.], and the difference between sales in each quarter.^[Personal Disposable Income (PDI) data for IN was not available in quarters. Instead, I took the PDI for the U.S. and adjusted it according to the percentage of the U.S. population that Indiana made up each year in the data.] You can find the equations for both models at the bottom of this report.
 
-Because I included additional variables besides past revenue and time, I had to forecast each of those variables before using them to produce the revenue estimates. Using data from the U.S. Census Bureau and the Bureau of Economic Analysis, I produced simple trend forecasts for each independent variable (except for unemployment rate^[The estimates for unemployment rate used a lagged variable for unemployment to influence each subsequent prediction.]), meaning that their forecasts are simply based on their past growth from year-to-year. Some of these additional variables only had values back to `r Year[1]`, so the data for the revenue estimate only go back to `r Year[1]`.
+I predicted future values for each of the variable besides revenue and time to include in the model since their values are not known yet. Using data from the U.S. Census Bureau and the Bureau of Economic Analysis, I produced simple trend forecasts for each independent variable (except for unemployment rate^[The estimates for unemployment rate used a lagged variable for unemployment to influence each subsequent prediction.]), meaning that their forecasts are simply based on their past growth from year-to-year. Some of these additional variables only had values back to `r Year[1]`, so the data for the revenue estimate only go back to `r Year[1]`.
 
 ### Equations and Notes
 
