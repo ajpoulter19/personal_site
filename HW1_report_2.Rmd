@@ -287,7 +287,7 @@ fig.sales.final<-ggplot() +
   geom_line(data=out.sales.final, linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Sales Forecast`,group=1, color="Predicted Revenue")) +
   annotate(geom = "text",x=seq_len(nrow(out.sales.final)),y=34,label=out.sales.final$Qtr,size=0)+
   annotate(geom = "text", x= 2.5 + 4 * (0:33),y=28, label=unique(out.sales.final$Year),size=3,angle=90)+
-  theme(axis.text.x = element_blank()) +
+  theme(axis.text.x = element_blank(),legend.title=element_blank()) +
   labs(title="Figure 1: Indiana Sales Tax Revenue, 1989-2022 Qtr 2",subtitle = "Predicted and Actual Revenues", x="Year",y="Millions, $")+
   ggtitle("Figure 1: Sales Tax Revenue")
 fig.sales.final <- fig.sales.final + scale_color_manual(values = c("black","red"))
@@ -308,7 +308,7 @@ fig.income.final<-ggplot() +
   geom_line(data=out.income.final,linetype=2, aes(x = interaction(Year,Qtr,lex.order = TRUE),y=`Income Forecast`,group=1, color="Predicted Revenue")) +
   annotate(geom = "text",x=seq_len(nrow(out.income.final)),y=34,label=out.income.final$Qtr,size=0)+
   annotate(geom = "text", x= 2.5 + 4 * (0:33),y=28, label=unique(out.income.final$Year),size=3,angle=90)+
-  theme(axis.text.x = element_blank()) +
+  theme(axis.text.x = element_blank(),legend.title=element_blank()) +
   labs(title="Figure 2: Indiana Individual Income Tax Revenue, 1989-2022 Qtr 2",subtitle = "Predicted and Actual Revenues", x="Year",y="Millions, $")
 fig.income.final <- fig.income.final + scale_color_manual(values = c("black","red"))
 print(fig.income.final)
