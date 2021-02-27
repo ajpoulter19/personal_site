@@ -5,7 +5,7 @@ author: |
   | MPA Student
   | Paul H. O'Neill School of Public & Environmental Affairs
   | andpoult@iu.edu
-date: '`r format(Sys.time(), "%B %d, %Y")`'
+date: February 20, 2021
 output: html_document
 ---
 ```{r setup, include=FALSE}
@@ -288,8 +288,7 @@ fig.sales.final<-ggplot() +
   annotate(geom = "text",x=seq_len(nrow(out.sales.final)),y=34,label=out.sales.final$Qtr,size=0)+
   annotate(geom = "text", x= 2.5 + 4 * (0:33),y=28, label=unique(out.sales.final$Year),size=3,angle=90)+
   theme(axis.text.x = element_blank(),legend.title=element_blank()) +
-  labs(title="Figure 1: Indiana Sales Tax Revenue, 1989-2022 Qtr 2",subtitle = "Predicted and Actual Revenues", x="Year",y="Millions, $")+
-  ggtitle("Figure 1: Sales Tax Revenue")
+  labs(title="Figure 1: Indiana Sales Tax Revenue, 1989-2022 Qtr 2",subtitle = "Predicted and Actual Revenues", x="Year",y="Millions, $")
 fig.sales.final <- fig.sales.final + scale_color_manual(values = c("black","red"))
 print(fig.sales.final)
 
@@ -354,7 +353,7 @@ To: Indiana State Budget Committee
 
 From: Andrew J. Poulter
 
-Date: `r format(Sys.time(), "%B %d, %Y")`
+Date: February 20, 2021
 
 Re: Revenue Forecast for Q3FY2021-Q4FY2022
 
@@ -381,7 +380,7 @@ print(fig.income.final)
 
 Both forecasts use multivariate regression, meaning that the revenue forecasts are based on revenue growth over previous years as well as the values of other relevant data in those years. For PIT, the revenue forecast includes time, the IN income tax rate, aggregate personal income for Hoosiers, the IN unemployment rate, and the difference between revenues in each quarter. The RST forecast includes time, the sales tax rate, aggregate disposable IN for Hoosiers^[The quarter dummy variables were particularly important in order to capture the seasonality in the data. The revenues for both sales and income followed a quarterly pattern throughout each year and the dummy variables allowed the forecasts to react similarly.], and the difference between sales in each quarter.^[Personal Disposable Income (PDI) data for IN was not available in quarters. Instead, I took the PDI for the U.S. and adjusted it according to the percentage of the U.S. population that Indiana made up each year in the data.] You can find the equations for both models at the bottom of this report.
 
-I predicted future values for each of the variable besides revenue and time to include in the model since their values are not known yet. Using data from the U.S. Census Bureau and the Bureau of Economic Analysis, I produced simple trend forecasts for each independent variable (except for unemployment rate^[The estimates for unemployment rate used a lagged variable for unemployment to influence each subsequent prediction.]), meaning that their forecasts are simply based on their past growth from year-to-year. Some of these additional variables only had values back to `r Year[1]`, so the data for the revenue estimate only go back to `r Year[1]`.
+I predicted future values for each of the variable besides revenue and time to include in the model since their values are not known yet. Using data from the U.S. Census Bureau and the Bureau of Economic Analysis, I produced simple trend forecasts for each independent variable (except for unemployment rate^[The estimates for unemployment rate used a lagged variable for unemployment to influence each subsequent prediction.]), meaning that their forecasts are simply based on their past growth from year-to-year. Some of these additional variables only had values back to `r Year[1]`, so the data for the revenue estimates only go back to `r Year[1]`.
 
 ### Equations and Notes
 
