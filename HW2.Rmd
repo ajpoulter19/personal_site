@@ -5,7 +5,7 @@ author: |
   | MPA Student
   | Paul H. O'Neill School of Public & Environmental Affairs
   | andpoult@iu.edu
-date: '`r format(Sys.time(), "%B %d, %Y")`'
+date: February 20, 2021
 output: html_document
 ---
 ```{r setup, include=FALSE}
@@ -97,7 +97,8 @@ monthly.errors.final <- monthly.errors.final %>%
   select("Fiscal Year",everything())
 ##create targets using 2019 data
 "2022.actual"<-c(6369.3)
-"2022.targets"<-average.shares.data[1,]*`2022.actual`
+shares<-as.numeric(average.shares.data[1,])
+"2022.targets"<-round((shares*`2022.actual`),2)
 
 ##Part 2##
 ##targets minus actuals divided by actuals to get monthly percentage errors
@@ -174,8 +175,8 @@ tab.fnl<-round(tab.fnl,2)
 tab.fnl$`Fiscal Year`= c("19","18-19","17-19","16-19","15-19","14-19","13-19")
 names(tab.fnl)<-c("Fiscal Years Averaged","Jul.","Aug.","Sep.","Oct.","Nov.","Dec.","Jan.","Feb.","Mar.","Apr.","May","Jun.","Yearly Average Errors")
 
-`2022.targets`<-as.integer(c(`2022.targets`,`2022.actual`))
-`2022.targets`<-dollar_format(largest_with_cents = 10000)(`2022.targets`)
+`2022.targets`<-c(`2022.targets`,`2022.actual`)
+`2022.targets`<-dollar_format()(`2022.targets`)
 `2022.targets`<-as.data.frame(rbind(`2022.targets`))
 names(`2022.targets`)<-c("Jul.","Aug.","Sep.","Oct.","Nov.","Dec.","Jan.","Feb.","Mar.","Apr.","May","Jun.","Total")
 ##rename row
@@ -224,7 +225,7 @@ To: Indiana State Budget Committee
 
 From: Andrew J. Poulter
 
-Date: `r format(Sys.time(), "%B %d, %Y")`
+Date: February 20, 2021
 
 Re: Revenue Targets for FY2022
 
@@ -242,7 +243,7 @@ tab.fnl %>%
   kbl(caption="Table 1: Revenue Target Percentage Errors")%>%
   kable_styling(bootstrap_options = c("striped","hover"))%>%
   column_spec(14,bold = T)%>%
-  footnote(general = "When looking at the average percentage error for various combinations of years to the FY2020 actual monthly revenues, there were large errors for April FY2020 compared to any of the estimates because the COVID-19 pandemic disrupted tax collections. It dropped the April actual revenues from 1,233 millions of dollars in FY2019 to 477 millions of dollars in FY2020. Because this impact from the pandemic is an anomaly and not likely to occur again soon, I used the April FY2019 actual revenue to compare to the average share across various years so that the estimates better reflect the norm.")
+  footnote(general = "When looking at the average percentage error for various combinations of years to the FY2020 actual monthly revenues, there were large errors for April FY2020 compared to any of the estimates because the COVID-19 pandemic disrupted tax collections. It dropped the April actual revenues from $1,233 millions in FY2019 to $477 millions in FY2020. Because this impact from the pandemic is an anomaly and not likely to occur again soon, I used the April FY2019 actual revenue to compare to the average share across various years so that the estimates better reflect the norm.")
   
 ```
 
