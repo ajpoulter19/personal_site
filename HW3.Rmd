@@ -1,0 +1,144 @@
+---
+title: "<img src=\"IUsnip.png\" style=\"float: top;\"/> V609: Assignment 3"
+author: |
+  | Andrew J. Poulter
+  | MPA Student
+  | Paul H. O'Neill School of Public & Environmental Affairs
+  | andpoult@iu.edu
+date: '`r format(Sys.time(), "%B %d, %Y")`'
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(forecast)
+library(readxl)
+library(writexl)
+library(ggplot2)
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(reshape)
+library(reshape2)
+library(knitr)
+library(kableExtra)
+library(dynlm)
+library(texreg)
+library(scales)
+library(useful)
+library(sqldf)
+
+##import data##
+HW3_Data <- read_excel("C:/Users/Andrew/OneDrive/Spring 2021/Revenue Theory/HW 3/HW3.Data.xlsx")
+View(HW3_Data)
+##add 2020 data
+##"2020"<-c(2020,21.73,3.02)
+##HW3_Data<-as.data.frame(rbind(HW3_Data,`2020`,`2021`,`2022`,`2023`))
+names(HW3_Data)<-c("fiscal.year","ad.spending","ad.spending5","ad.spending10","ad.spending15","ad.spending20","lottery.sales")
+
+##fit sales to spending
+fit.sales<-lm(lottery.sales ~ ad.spending, data=HW3_Data)
+summary(fit.sales)
+fit.sales5<- lm(lottery.sales ~ ad.spending5, data=HW3_Data)
+summary(fit.sales5)
+fit.sales10<- lm(lottery.sales ~ ad.spending10, data=HW3_Data)
+summary(fit.sales10)
+fit.sales15<- lm(lottery.sales ~ ad.spending15, data=HW3_Data)
+summary(fit.sales15)
+fit.sales20<- lm(lottery.sales ~ ad.spending20, data=HW3_Data)
+summary(fit.sales20)
+data.train<-HW3_Data[1:13,]
+data.test<-HW3_Data[14:16,]
+data.test5<-HW3_Data[14:16,3]
+data.test10<-HW3_Data[14:16,4]
+data.test15<-HW3_Data[14:16,5]
+data.test20<-HW3_Data[14:16,6]
+
+##predict 5%, 10%, 15%, and 20%
+out.sales5<-predict(fit.sales5,data.test5)
+out.sales10<-predict(fit.sales10,data.test10)
+out.sales15<-predict(fit.sales15,data.test15)
+out.sales20<-predict(fit.sales20,data.test20)
+data.per.capita <- cbind(out.sales5,out.sales10,out.sales15,out.sales20)
+out.sales5<-dollar_format(largest_with_cents = 1000)(out.sales5)
+out.sales10<-dollar_format(largest_with_cents = 1000)(out.sales10)
+out.sales15<-dollar_format(largest_with_cents = 1000)(out.sales15)
+out.sales20<-dollar_format(largest_with_cents = 1000)(out.sales20)
+
+tab.projected.sales <- as.data.frame(cbind(HW3_Data$fiscal.year[14:16],out.sales5,out.sales10,out.sales15,out.sales20))
+names(out.sales20)<-c("Fiscal Year","Lottery Sales 20%")
+
+##calculate what total ad revenue NC needs to be 12th in per capita sales
+"12th place" <- 455.70
+NC.pop<-10488084
+goal.sales <- (`12th place`*NC.pop)/1000000000
+spending.needed <- (goal.sales - 0.01642)/0.11466
+yearly.increase.needed <- as.numeric(((spending.needed/HW3_Data[13,2])^(1/3))-1)
+"2021.increase" <- as.numeric(HW3_Data[13,2]*(1+yearly.increase.needed))
+"2022.increase" <- as.numeric(`2021.increase`*(1+yearly.increase.needed))
+"2023.increase" <- as.numeric(`2022.increase`*(1+yearly.increase.needed))
+ad.spending.goal <-as.data.frame(rbind(HW3_Data[1:13,2],`2021.increase`,`2022.increase`,`2023.increase`))
+HW3_Data_goal <- cbind(HW3_Data,ad.spending.goal)
+colnames(HW3_Data_goal)[8] <- "ad.spending.goal"
+HW3_Data_goal <- as.data.frame(HW3_Data_goal)
+
+##will new numbers make the goal?
+fit.sales.goal<- lm(lottery.sales ~ ad.spending.goal, data=HW3_Data_goal)
+summary(fit.sales.goal)
+data.test.goal<-as.data.frame(HW3_Data_goal[14:16,8])
+names(data.test.goal) <- "ad.spending.goal"
+out.sales.goal<- predict(fit.sales.goal,data.test.goal)
+data.per.capita <- cbind(data.per.capita,out.sales.goal)
+data.per.capita <- as.data.frame(cbind(HW3_Data$fiscal.year[14:16],(data.per.capita*1000000000)/NC.pop))
+colnames(data.per.capita)[1] <- "Fiscal Year"
+out.sales.goal<-dollar_format(largest_with_cents = 1000)(out.sales.goal)
+
+table.final <- as.data.frame(cbind(tab.projected.sales,out.sales.goal))
+names(table.final)<-c("Fiscal Year","5% Ad Increase","10% Ad Increase","15% Ad Increase","20% Ad Increase","24% Ad Increase")
+
+fig1 <- ggplot(data=data.per.capita, aes(x = `Fiscal Year`,y=`out.sales20`,color="20% Increase"))+
+  geom_point()
+fig1.fnl <- fig1 +
+  geom_point(data=data.per.capita, aes(x = `Fiscal Year`,y=`out.sales.goal`,group=1, color="24% Increase"))+
+  labs(x="Fiscal Year",y="per Capita Lottery Sales, $")+
+  ggtitle("Figure 1: Estimated North Carolina per Capita Lottery Sales")+
+  scale_x_continuous(name="Fiscal Year",limits=c(2020.5,2023.5))+
+  geom_hline(yintercept=455.7,linetype="dashed",color="black")+
+  annotate(geom = "text",label = "DC per capita lottery sales",x=2021,y=451.9,vjust=1,size=2.5)+
+  theme(legend.title=element_blank())
+print(fig1.fnl)
+
+```
+## Memo
+
+To: North Carolina Education Lottery Committee
+
+From: Andrew J. Poulter
+
+Date: `r format(Sys.time(), "%B %d, %Y")`
+
+Re: Revenue Estimation for Lottery Sales
+
+
+-------------------------------------------------------------------------------
+
+One of your strategies to become the 12th highest state in per capita lottery sales is to increase ad spending. This memo reports what it would take to reach that goal solely by increasing ad spending.
+
+There is a positive relationship between ad spending and lottery sales. Specifically, a \$1 million increase in ad spending is correlated with a \$114 million increase in lottery sales.^[This relationship was calculated using historical ad spending and lottery sales data from FY2008-FY2020.] Table 1 uses that relationship to estimate lottery sales in Fiscal Years 2021-2023 under different ad spending increases: a 5% increase each year, a 10% increase each year, and so on. Lottery sales in FY2020 were \$`r HW3_Data[13,7]` billion. As you can see in the columns, only the 15% and 20% ad increases would significantly help boost lottery sales beyond what they were in FY2020. In fact, lottery sales would fall with only a 5% ad increase. To reach your goal, you must look at other options to boost total lottery sales along with spending more on advertising.
+
+```{r cars, echo=FALSE}
+table.final %>%
+  kbl(caption="Table 1: Lottery Sales Under Ad Increases, Billions of $")%>%
+  kable_styling(bootstrap_options = c("striped","hover"))%>%
+  column_spec(6,bold = T)
+  
+```
+
+As of FY2019, the District of Columbia had the 12th highest per capita lottery sales at \$455.70. As shown in Figure 1, not even the 20% ad increases would lead to per capita sales enough to surpass DC. In order to meet DC's FY2019 per capita sales through ad spending alone, North Carolina would need to increase ad spending 24% per year through FY2023, shown in final column of Table 1. And that doesn't even take into account the fact that the per capita sales needed to be 12th in the next three years will likely be more than \$455.70.
+
+While it's possible to produce estimates for what the 12th highest per capita in FY2023 would be -- I could estimate what the 12th highest per capita sales were over a 20 year period or so to use as an estimate -- the data on lottery sales and state populations in various years are sporadic and don't always match up. If I were to do that, the data would likely come from many different sources from year to year, providing unreliable estimates.
+
+```{r, echo=FALSE}
+print(fig1.fnl)
+```
+
+Additionally, the positive relationship between lottery sales and ad spending does not take into account any other factors that are likely to influence lottery sales. For example, ad spending and lottery sales both increased from FY08-FY19; but, when ad spending dropped from \$`r HW3_Data[12,2]` in FY2019 to \$`r HW3_Data[13,2]` in FY2020, lottery sales still increased. Accounting for that in a new relationship between ad spending and lottery sales would change how much ad spending would need to increase to reach higher per capita sales. Other possible factors that influence lottery sales could be adult population growth, access to lottery tickets, and changes in disposable income among North Carolinians. Relying on the estimate between ad spending and lottery sales alone to become the 12th highest in per capital lottery sales would require a large sum of money. It would be wise to look at a 10-15% increase in ad expenditures and combine it will other strategies in order to reach your goal of per capita lottery sales.

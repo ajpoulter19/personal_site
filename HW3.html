@@ -9,10 +9,10 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Andrew Poulter" />
 
+<meta name="date" content="2021-02-27" />
 
-<title>Personal Website</title>
+<title> V609: Assignment 3</title>
 
 <script src="site_libs/header-attrs-2.7/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
@@ -33,6 +33,8 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -269,14 +271,125 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Personal Website</h1>
-<h4 class="author">Andrew Poulter</h4>
+<h1 class="title toc-ignore"><img src="IUsnip.PNG" style="float: top;"/> V609: Assignment 3</h1>
+<h4 class="author"><div class="line-block">Andrew J. Poulter<br />
+MPA Student<br />
+Paul H. O’Neill School of Public &amp; Environmental Affairs<br />
+<a href="mailto:andpoult@iu.edu" class="email">andpoult@iu.edu</a></div></h4>
+<h4 class="date">February 27, 2021</h4>
 
 </div>
 
 
-<p>Hello, I was born and raised in Salt Lake City, UT, spent 2 years living in Uruguay, and graduated from Brigham Young University before moving to Bloomington, IN for my MPA program. I initially started my program to become a policy analyst for family and child welfare policies; accordingly, I have developed qualitative skills for analyzing and suggesting policy changes. My finance, budgeting, accounting, and data analysis classes, however, have been some my favorite classes as I have developed new quantitative skills to use in problem-solving.</p>
-<p>This webpage is intended to share some of the quantitative data analysis and visualization skills that I have developed in my program, particularly as they relate to government budgeting. In various tabs at the top, you can view assignments I have completed on forecasting and budgeting.</p>
+<div id="memo" class="section level2">
+<h2>Memo</h2>
+<p>To: North Carolina Education Lottery Committee</p>
+<p>From: Andrew J. Poulter</p>
+<p>Date: February 27, 2021</p>
+<p>Re: Revenue Estimation for Lottery Sales</p>
+<hr />
+<p>One of your strategies to become the 12th highest state in per capita lottery sales is to increase ad spending. This memo reports what it would take to reach that goal solely by increasing ad spending.</p>
+<p>There is a positive relationship between ad spending and lottery sales. Specifically, a $1 million increase in ad spending is correlated with a $114 million increase in lottery sales.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> Table 1 uses that relationship to estimate lottery sales in Fiscal Years 2021-2023 under different ad spending increases: a 5% increase each year, a 10% increase each year, and so on. Lottery sales in FY2020 were $3.02 billion. As you can see in the columns, only the 15% and 20% ad increases would significantly help boost lottery sales beyond what they were in FY2020. In fact, lottery sales would fall with only a 5% ad increase. To reach your goal, you must look at other options to boost total lottery sales along with spending more on advertising.</p>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<caption>
+Table 1: Lottery Sales Under Ad Increases, Billions of $
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Fiscal Year
+</th>
+<th style="text-align:left;">
+5% Ad Increase
+</th>
+<th style="text-align:left;">
+10% Ad Increase
+</th>
+<th style="text-align:left;">
+15% Ad Increase
+</th>
+<th style="text-align:left;">
+20% Ad Increase
+</th>
+<th style="text-align:left;">
+24% Ad Increase
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+2021
+</td>
+<td style="text-align:left;">
+$2.63
+</td>
+<td style="text-align:left;">
+$2.76
+</td>
+<td style="text-align:left;">
+$2.88
+</td>
+<td style="text-align:left;">
+$3.01
+</td>
+<td style="text-align:left;font-weight: bold;">
+$3.11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2022
+</td>
+<td style="text-align:left;">
+$2.76
+</td>
+<td style="text-align:left;">
+$3.03
+</td>
+<td style="text-align:left;">
+$3.31
+</td>
+<td style="text-align:left;">
+$3.60
+</td>
+<td style="text-align:left;font-weight: bold;">
+$3.85
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2023
+</td>
+<td style="text-align:left;">
+$2.90
+</td>
+<td style="text-align:left;">
+$3.33
+</td>
+<td style="text-align:left;">
+$3.81
+</td>
+<td style="text-align:left;">
+$4.32
+</td>
+<td style="text-align:left;font-weight: bold;">
+$4.78
+</td>
+</tr>
+</tbody>
+</table>
+<p>As of FY2019, the District of Columbia had the 12th highest per capita lottery sales at $455.70. As shown in Figure 1, not even the 20% ad increases would lead to per capita sales enough to surpass DC. In order to meet DC’s FY2019 per capita sales through ad spending alone, North Carolina would need to increase ad spending 24% per year through FY2023, shown in final column of Table 1. And that doesn’t even take into account the fact that the per capita sales needed to be 12th in the next three years will likely be more than $455.70.</p>
+<p>While it’s possible to produce estimates for what the 12th highest per capita in FY2023 would be – I could estimate what the 12th highest per capita sales were over a 20 year period or so to use as an estimate – the data on lottery sales and state populations in various years are sporadic and don’t always match up. If I were to do that, the data would likely come from many different sources from year to year, providing unreliable estimates.</p>
+<p><img src="HW3_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>Additionally, the positive relationship between lottery sales and ad spending does not take into account any other factors that are likely to influence lottery sales. For example, ad spending and lottery sales both increased from FY08-FY19; but, when ad spending dropped from $25.37 in FY2019 to $21.73 in FY2020, lottery sales still increased. Accounting for that in a new relationship between ad spending and lottery sales would change how much ad spending would need to increase to reach higher per capita sales. Other possible factors that influence lottery sales could be adult population growth, access to lottery tickets, and changes in disposable income among North Carolinians. Relying on the estimate between ad spending and lottery sales alone to become the 12th highest in per capital lottery sales would require a large sum of money. It would be wise to look at a 10-15% increase in ad expenditures and combine it will other strategies in order to reach your goal of per capita lottery sales.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>This relationship was calculated using historical ad spending and lottery sales data from FY2008-FY2020.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
 
 
 
